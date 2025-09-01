@@ -70,10 +70,12 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- if .Values.db.enabled }}
             - name: DB_HOSTNAME
-              value: {{ include "supabase.db.fullname" . }}
-            {{- end }}
+              {{- if .Values.db.enabled }}
+              value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else }}
+              value: {{ .Values.auth.environment.DB_HOST | quote }}
+              {{- end }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -121,9 +123,11 @@ spec:
               value: {{ .Values.analytics.bigQuery.projectNumber | quote }}
             {{- else }}
             - name: POSTGRES_BACKEND_URL
-              value: $(DB_DRIVER)://$(DB_USERNAME):$(DB_PASSWORD_ENC)@$(DB_HOSTNAME):$(DB_PORT)/$(DB_DATABASE)
+              value: $(DB_DRIVER)://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOSTNAME):$(DB_PORT)/$(DB_DATABASE)?sslmode=$(DB_SSL)
+            {{- if .Values.analytics.environment.DB_SCHEMA }}
             - name: POSTGRES_BACKEND_SCHEMA
               value: $(DB_SCHEMA)
+            {{- end }}
             - name: LOGFLARE_FEATURE_FLAG_OVERRIDE
               value: $(FEATURE_FLAG_OVERRIDE)
             {{- end }}
