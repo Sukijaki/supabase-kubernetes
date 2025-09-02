@@ -30,7 +30,7 @@ spec:
         {{- toYaml .Values.analytics.podSecurityContext | nindent 8 }}
       initContainers:
         - name: init-db
-          image: postgres:15-alpine
+          image: postgres:16-alpine
           imagePullPolicy: IfNotPresent
           env:
             - name: DB_HOST
@@ -54,7 +54,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              until pg_isready -h $(DB_HOST) -p $(DB_PORT) -U $(DB_USER); do
+              until pg_isready -h $(DB_HOST) -p $(DB_PORT) -U $(DB_USER) sslmode=require; do
               echo "Waiting for database to start..."
               sleep 2
               done
